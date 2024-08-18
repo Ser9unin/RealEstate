@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Ser9unin/Apartments/internal/render"
+	"github.com/Ser9unin/RealEstate/internal/render"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

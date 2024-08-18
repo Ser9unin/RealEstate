@@ -1,4 +1,4 @@
-module github.com/Ser9unin/Apartments
+module github.com/Ser9unin/RealEstate
 
 go 1.22.5
 

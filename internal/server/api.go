@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Ser9unin/Apartments/internal/register"
-	"github.com/Ser9unin/Apartments/internal/render"
-	repository "github.com/Ser9unin/Apartments/internal/storage/repo"
+	"github.com/Ser9unin/RealEstate/internal/register"
+	"github.com/Ser9unin/RealEstate/internal/render"
+	repository "github.com/Ser9unin/RealEstate/internal/storage/repo"
 )
 
 type api struct {

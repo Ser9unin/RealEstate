@@ -3,7 +3,7 @@ package register
 import (
 	"context"
 
-	repository "github.com/Ser9unin/Apartments/internal/storage/repo"
+	repository "github.com/Ser9unin/RealEstate/internal/storage/repo"
 )
 
 type MockStore struct {

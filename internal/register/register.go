@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/Ser9unin/Apartments/internal/render"
-	repository "github.com/Ser9unin/Apartments/internal/storage/repo"
+	"github.com/Ser9unin/RealEstate/internal/render"
+	repository "github.com/Ser9unin/RealEstate/internal/storage/repo"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -55,7 +54,6 @@ func (s *UserService) Register(w http.ResponseWriter, r *http.Request) {
 
 	var user repository.User
 	err = json.Unmarshal(body, &user)
-	fmt.Println(user.Email, user.UserID, user.HashPass, user.Role)
 	if err != nil {
 		s.logger.Error(err.Error())
 		render.ErrorJSON(w, r, http.StatusBadRequest, err, "Invalid request payload")
@@ -69,7 +67,6 @@ func (s *UserService) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.HashPass, err = render.HashPassword(user.HashPass)
-	fmt.Println("hash_pass", user.HashPass)
 	if err != nil {
 		s.logger.Error(err.Error())
 		render.ErrorJSON(w, r, http.StatusInternalServerError, err, "Error creating user")
@@ -102,12 +99,10 @@ func (s *UserService) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
-
 	defer r.Body.Close()
 
 	var user repository.User
 	err = json.Unmarshal(body, &user)
-	fmt.Println(user.Email, user.UserID, user.HashPass, user.Role)
 
 	if err != nil {
 		s.logger.Error(err.Error())

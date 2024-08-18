@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Ser9unin/Apartments/internal/render"
+	"github.com/Ser9unin/RealEstate/internal/render"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -63,12 +63,11 @@ func userByToken(r *http.Request) (string, error) {
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
-	userID := claims["userID"].(string)
 	userRole := claims["role"].(string)
-	fmt.Println(userID, userRole)
 
 	// эта часть под вопросом, теоретически роль может не совпадать в БД и реальности и это надо проверять
 	// var storage repository.Queries
+	// userID := claims["userID"].(string)
 	// _, err = storage.UserByIDAndRole(r.Context(), userID, userRole)
 	// if err != nil {
 	// 	log.Printf("id or role is wrong: %v", err)
