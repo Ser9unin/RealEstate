@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/Ser9unin/RealEstate/internal/render"
 
@@ -82,6 +83,7 @@ func getTokenFromRequest(r *http.Request) string {
 	tokenQuery := r.URL.Query().Get("token")
 
 	if tokenAuth != "" {
+		tokenAuth = strings.TrimPrefix(tokenAuth, "bearer ")
 		return tokenAuth
 	}
 
