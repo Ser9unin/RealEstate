@@ -23,7 +23,6 @@ func TestValidateUserPayload(t *testing.T) {
 		args args
 		want error
 	}{
-
 		{
 			name: "should return error if email is empty",
 			args: args{

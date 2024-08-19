@@ -13,6 +13,7 @@ linters-settings:
      allow:
      - $gostd
      - github.com/stretchr/testify
+     - github.com/Ser9unin/RealEstate/internal/
 
 linters:
   disable-all: true

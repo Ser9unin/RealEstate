@@ -13,7 +13,7 @@ type House struct {
 
 type Flat struct {
 	ID      int    `json:"id" faker:"-"`
-	HouseId int    `json:"house_id" faker:"-"`
+	HouseID int    `json:"house_id" faker:"-"`
 	Price   int    `json:"price,omitempty" faker:"boundary_start=1000000, boundary_end=200000000"`
 	Rooms   int    `json:"rooms,omitempty" faker:"boundary_start=1, boundary_end=6"`
 	Status  string `json:"status,omitempty" faker:"-"`

@@ -6,8 +6,10 @@ import (
 	"net/http"
 )
 
-var badUsers []User
-var badHouses []House
+var (
+	badUsers  []User
+	badHouses []House
+)
 
 // var badFlats []Flat
 

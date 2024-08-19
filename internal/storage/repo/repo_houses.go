@@ -61,7 +61,8 @@ func (q *Queries) House(ctx context.Context, id int) (House, error) {
 }
 
 // Создание дома:
-// Только модератор имеет возможность создать дом используя endpoint /house/create. В случае успешного запроса возвращается полная информация о созданном доме
+// Только модератор имеет возможность создать дом используя endpoint /house/create.
+// В случае успешного запроса возвращается полная информация о созданном доме.
 const newHouse = `-- name: NewHouse :one
 INSERT INTO houses(address, year, developer) 
 VALUES ($1, $2, $3)

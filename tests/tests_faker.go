@@ -13,7 +13,7 @@ func fakeNewFlat(house House) Flat {
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("can't create fake data: %s", err.Error()))
 	}
-	fakeFlat.HouseId = house.ID
+	fakeFlat.HouseID = house.ID
 
 	return *fakeFlat
 }

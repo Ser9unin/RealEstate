@@ -40,9 +40,9 @@ EXECUTE FUNCTION updated_houses();
 -- Создание таблицы для хранения информации о пользователях
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    uuid VARCHAR(255) NOT NULL,
+    uuid VARCHAR(40) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    hash_pass VARCHAR(255) NOT NULL,
+    hash_pass VARCHAR(70) NOT NULL,
     role VARCHAR(15) NOT NULL
 );
 

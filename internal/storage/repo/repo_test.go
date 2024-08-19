@@ -25,16 +25,13 @@ func setDataBase(ctx context.Context) (*sql.DB, error) {
 	if err != nil {
 		log.Fatal("unable to start db: ", err)
 	}
-
 	db.SetMaxOpenConns(1000) // Максимальное количество открытых подключений
 	db.SetMaxIdleConns(50)   // Максимальное количество простаивающих подключений
 	db.SetConnMaxLifetime(5 * time.Second)
-
 	err = db.PingContext(ctx)
 	if err != nil {
 		log.Fatal("context cancelled", err)
 	}
-
 	return db, nil
 }
 
@@ -45,11 +42,10 @@ func TestHouse(t *testing.T) {
 	defer db.Close()
 
 	clearHousesTable(db)
-	storage := New(db)
 
+	storage := New(db)
 	testHouses := fakeHouses()
 	fmt.Println(len(testHouses))
-
 	t.Run("positive test house add to db", func(t *testing.T) {
 		for _, house := range testHouses {
 			// проверяем запрос на создание дома, должен вернуть данные о доме с датой создания
@@ -83,7 +79,6 @@ func TestHouse(t *testing.T) {
 	t.Run("positive test get by single house from DB", func(t *testing.T) {
 		resultHouses, errDB := storage.HousesList(ctx)
 		require.NoError(t, errDB)
-
 		for _, house := range resultHouses {
 			// запрашиваем по одному дому
 			resultHouse, errDB := storage.House(ctx, house.ID)
@@ -95,7 +90,6 @@ func TestHouse(t *testing.T) {
 			require.NotNil(t, resultHouse.CreateAt)
 		}
 	})
-
 	clearHousesTable(db)
 }
 
@@ -116,30 +110,32 @@ func TestFlat(t *testing.T) {
 
 	clearHousesTable(db)
 	clearFaltsTable(db)
-	storage := New(db)
 
+	storage := New(db)
 	testHouses := fakeHouses()
 	for _, house := range testHouses {
 		_, err := storage.NewHouse(ctx, house)
 		require.NoError(t, err)
 	}
+
 	testHousesFromDB, err := storage.HousesList(ctx)
 	require.NoError(t, err)
 	// создаём базу квартир на основе базы домов
 	testFlats := fakeFlats(testHousesFromDB)
-
 	t.Run("positive test flat add to db", func(t *testing.T) {
 		for _, flat := range testFlats {
 			// проверяем запрос на создание квартиры, должен вернуть данные о квартире с датой создания
 			resultCreate, err := storage.NewFlat(ctx, flat)
 			require.NoError(t, err)
 			require.NotNil(t, resultCreate.ID)
-			require.Equal(t, flat.HouseId, resultCreate.HouseId)
+			require.Equal(t, flat.HouseID, resultCreate.HouseID)
 			require.Equal(t, flat.Price, resultCreate.Price)
 			require.Equal(t, flat.Rooms, resultCreate.Rooms)
 			require.Equal(t, resultCreate.Status, "created")
 		}
-		// после создания квартир в домах БД должно обновиться поле updated_at проверяем, для этого делаем запрос списка домов снова
+
+		// после создания квартир в домах БД должно обновиться поле updated_at проверяем,
+		// для этого делаем запрос списка домов снова
 		updTestHouses, errDB := storage.HousesList(ctx)
 		require.NoError(t, errDB)
 		for i, house := range updTestHouses {
@@ -152,26 +148,26 @@ func TestFlat(t *testing.T) {
 		for _, house := range testHousesFromDB {
 			testFlatsFromDB, err := storage.FlatsList(ctx, house.ID, moderator)
 			require.NoError(t, err)
-
 			for _, flat := range testFlatsFromDB {
 				// проверяем запрос квартиры, должен вернуть данные о квартире с датой создания
-				resultRequest, err := storage.Flat(ctx, moderator, flat.HouseId, flat.ID)
+				resultRequest, err := storage.Flat(ctx, moderator, flat.HouseID, flat.ID)
 				require.NoError(t, err)
 				require.Equal(t, flat.ID, resultRequest.ID)
-				require.Equal(t, flat.HouseId, resultRequest.HouseId)
+				require.Equal(t, flat.HouseID, resultRequest.HouseID)
 				require.Equal(t, flat.Price, resultRequest.Price)
 				require.Equal(t, flat.Rooms, resultRequest.Rooms)
 				require.Equal(t, resultRequest.Status, "created")
 			}
 		}
 	})
+
 	t.Run("negative test user request flat from DB", func(t *testing.T) {
 		for _, house := range testHousesFromDB {
 			testFlatsFromDB, err := storage.FlatsList(ctx, house.ID, moderator)
 			require.NoError(t, err)
 			for _, flat := range testFlatsFromDB {
 				// проверяем запрос на создание квартиры, должен вернуть данные о квартире с датой создания
-				_, err := storage.Flat(ctx, "user", flat.HouseId, flat.ID)
+				_, err := storage.Flat(ctx, "user", flat.HouseID, flat.ID)
 				require.Error(t, err)
 			}
 		}
@@ -183,15 +179,16 @@ func TestFlat(t *testing.T) {
 			require.NoError(t, err)
 			for _, flat := range testFlatsFromDB {
 				// проверяем запрос квартиры, должен вернуть данные о квартире с датой создания
-				resultRequest, err := storage.UpdateFlatStatus(ctx, moderator, "approved", flat.HouseId, flat.ID)
+				resultRequest, err := storage.UpdateFlatStatus(ctx, moderator, "approved", flat.HouseID, flat.ID)
 				require.NoError(t, err)
 				require.Equal(t, flat.ID, resultRequest.ID)
-				require.Equal(t, flat.HouseId, resultRequest.HouseId)
+				require.Equal(t, flat.HouseID, resultRequest.HouseID)
 				require.Equal(t, flat.Price, resultRequest.Price)
 				require.Equal(t, flat.Rooms, resultRequest.Rooms)
 				require.Equal(t, resultRequest.Status, "approved")
+
 				// т.к. статус обновили до "approved" то пользователь должен начать получать данные о квартирах
-				_, err = storage.Flat(ctx, "user", flat.HouseId, flat.ID)
+				_, err = storage.Flat(ctx, "user", flat.HouseID, flat.ID)
 				require.NoError(t, err)
 			}
 		}
@@ -215,9 +212,7 @@ func TestUsers(t *testing.T) {
 	db, err := setDataBase(ctx)
 	require.NoError(t, err)
 	defer db.Close()
-
 	storage := New(db)
-
 	testUsers := fakeUsersRegister()
 	fmt.Println(len(testUsers))
 

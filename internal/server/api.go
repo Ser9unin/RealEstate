@@ -68,6 +68,18 @@ func (a *api) houseCreate(w http.ResponseWriter, r *http.Request) {
 		render.ErrorJSON(w, r, http.StatusBadRequest, err, "")
 		return
 	}
+
+	if newHouse.Year < 0 {
+		a.logger.Info(fmt.Sprintf("house way too old %d", newHouse.Year))
+		render.ErrorJSON(w, r, http.StatusBadRequest, fmt.Errorf("incorrect data"), "house way too old")
+		return
+	}
+	if newHouse.Address == "" {
+		a.logger.Info("no address provided")
+		render.ErrorJSON(w, r, http.StatusBadRequest, fmt.Errorf("not enough data"), "no address provided")
+		return
+	}
+
 	newHouse, err = a.storage.NewHouse(r.Context(), newHouse)
 	if err != nil {
 		a.logger.Error(err.Error())
@@ -104,7 +116,9 @@ func (a *api) houseFlats(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *api) houseSubscribe(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("<h1>Любимую квартиру ещё не построили, живите в той которая есть</h1>"))
 }
 
 func (a *api) flatCreate(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +129,19 @@ func (a *api) flatCreate(w http.ResponseWriter, r *http.Request) {
 		render.ErrorJSON(w, r, http.StatusBadRequest, err, "")
 		return
 	}
+
+	if newFlat.Price < 0 {
+		a.logger.Info(fmt.Sprintf("flat is too cheap %d", newFlat.Price))
+		render.ErrorJSON(w, r, http.StatusBadRequest, fmt.Errorf("incorrect data"), "flat is too cheap")
+		return
+	}
+
+	if newFlat.Rooms < 1 {
+		a.logger.Info(fmt.Sprintf("at least one room needed %d", newFlat.Rooms))
+		render.ErrorJSON(w, r, http.StatusBadRequest, fmt.Errorf("incorrect data"), "at least one room needed")
+		return
+	}
+
 	newFlat, err = a.storage.NewFlat(r.Context(), newFlat)
 	if err != nil {
 		a.logger.Error(err.Error())
@@ -132,7 +159,9 @@ func (a *api) flatUpdate(w http.ResponseWriter, r *http.Request) {
 		render.ErrorJSON(w, r, http.StatusBadRequest, err, "")
 		return
 	}
-	updFlat, err = a.storage.UpdateFlatStatus(r.Context(), "moderator", updFlat.Status, updFlat.HouseId, updFlat.ID)
+
+	role := w.Header().Get("role")
+	updFlat, err = a.storage.UpdateFlatStatus(r.Context(), role, updFlat.Status, updFlat.HouseID, updFlat.ID)
 	if err != nil {
 		a.logger.Error(err.Error())
 		render.ErrorJSON(w, r, http.StatusNotFound, fmt.Errorf("no such flat"), "")

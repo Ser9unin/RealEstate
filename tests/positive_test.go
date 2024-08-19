@@ -7,9 +7,11 @@ import (
 	"net/http"
 )
 
-var testUsers []User
-var testHouses []House
-var testFlats []Flat
+var (
+	testUsers  []User
+	testHouses []House
+	testFlats  []Flat
+)
 
 func init() {
 	testUsers = fakeUsersRegister()

@@ -12,7 +12,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func AuthModerator(httpHandler http.HandlerFunc) http.HandlerFunc {
+func Moderator(httpHandler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		role, err := userByToken(r)
 		if err != nil {
@@ -32,7 +32,7 @@ func AuthModerator(httpHandler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func AuthAny(httpHandler http.HandlerFunc) http.HandlerFunc {
+func Any(httpHandler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		role, err := userByToken(r)
 		if err != nil {

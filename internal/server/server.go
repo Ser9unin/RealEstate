@@ -51,11 +51,11 @@ func NewRouter(storage *repository.Queries, logger Logger) *http.ServeMux {
 	// mux.HandleFunc("/dummyLogin", HTTPLogger(a.dummyLogin))
 	mux.HandleFunc("/register", mw(a.register))
 	mux.HandleFunc("/login", mw(a.login))
-	mux.HandleFunc("/house/create", auth.AuthModerator(mw(a.houseCreate)))
-	mux.HandleFunc("/house/{id}", auth.AuthAny(HTTPLogger(a.houseFlats)))
-	mux.HandleFunc("/house/{id}/subscribe", auth.AuthAny(mw(a.houseSubscribe)))
-	mux.HandleFunc("/flat/create", auth.AuthAny(mw(a.flatCreate)))
-	mux.HandleFunc("/flat/update", auth.AuthModerator(mw(a.flatUpdate)))
+	mux.HandleFunc("/house/create", auth.Moderator(mw(a.houseCreate)))
+	mux.HandleFunc("/house/{id}", auth.Any(HTTPLogger(a.houseFlats)))
+	mux.HandleFunc("/house/{id}/subscribe", auth.Any(mw(a.houseSubscribe)))
+	mux.HandleFunc("/flat/create", auth.Any(mw(a.flatCreate)))
+	mux.HandleFunc("/flat/update", auth.Moderator(mw(a.flatUpdate)))
 
 	return mux
 }

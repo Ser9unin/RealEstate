@@ -16,10 +16,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var errEmailRequired = errors.New("email is required")
-var errRoleRequired = errors.New("user role is required")
-var errPasswordRequired = errors.New("password is required")
-var errEmailOrUUIDRequired = errors.New("email or id is required")
+var (
+	errEmailRequired       = errors.New("email is required")
+	errRoleRequired        = errors.New("user role is required")
+	errPasswordRequired    = errors.New("password is required")
+	errEmailOrUUIDRequired = errors.New("email or id is required")
+)
 
 type UserService struct {
 	storage Storage
@@ -103,7 +105,6 @@ func (s *UserService) Login(w http.ResponseWriter, r *http.Request) {
 
 	var user repository.User
 	err = json.Unmarshal(body, &user)
-
 	if err != nil {
 		s.logger.Error(err.Error())
 		render.ErrorJSON(w, r, http.StatusBadRequest, err, "invalid request payload")
@@ -120,18 +121,13 @@ func (s *UserService) Login(w http.ResponseWriter, r *http.Request) {
 
 	if user.UserID != "" {
 		user, err = s.storage.UserByID(r.Context(), user.UserID)
-		if err != nil {
-			s.logger.Error(err.Error())
-			render.ErrorJSON(w, r, http.StatusInternalServerError, err, "error login user")
-			return
-		}
 	} else {
 		user, err = s.storage.UserByEmail(r.Context(), user.Email)
-		if err != nil {
-			s.logger.Error(err.Error())
-			render.ErrorJSON(w, r, http.StatusInternalServerError, err, "error login user")
-			return
-		}
+	}
+	if err != nil {
+		s.logger.Error(err.Error())
+		render.ErrorJSON(w, r, http.StatusInternalServerError, err, "error login user")
+		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.HashPass), []byte(password)); err != nil {
