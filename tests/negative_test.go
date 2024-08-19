@@ -17,7 +17,7 @@ func (ts *TestSuite) TestNegativeSet() {
 			case i/3 == 0:
 				user.HashPass = ""
 			case i/5 == 0:
-				user.Role = ""
+				user.Role = "unexpected"
 			default:
 				user.Email = ""
 				user.HashPass = ""
@@ -69,37 +69,102 @@ func (ts *TestSuite) TestNegativeSet() {
 			checkUnautorized(ts, err, res)
 		}
 	})
-	// создаю пользователей в базе как клиентов
-	for i, user := range badUsers {
-		user.Role = "client"
-		jsonUser, err := json.Marshal(user)
-		ts.Require().NoError(err)
-		res, err = ts.sendRequest("register", "", jsonUser)
-		defer func() {
-			if err := res.Body.Close(); err != nil {
-				log.Println(err)
-				return
-			}
-		}()
-		checkErrAndCode(ts, err, res)
-		badUsers[i].UserID = checkResponseData(ts, res, user.UserID)
-		res, err = ts.sendRequest("login", "", jsonUser)
-		defer func() {
-			if err := res.Body.Close(); err != nil {
-				log.Println(err)
-				return
-			}
-		}()
-		checkErrAndCode(ts, err, res)
-		badUsers[i].JWT = checkResponseData(ts, res, user.JWT)
-	}
+}
 
+func (ts *TestSuite) TestNegativeHousesAndFlats() {
+	var res *http.Response
+	// создаю в базе клиента и модератора
+	client := User{
+		Email:    "client@client.com",
+		HashPass: "password",
+		Role:     "client",
+	}
+	client.JWT = createUser(ts, client)
+
+	admin := User{
+		Email:    "moderator@moderator.com",
+		HashPass: "password",
+		Role:     "moderator",
+	}
+	admin.JWT = createUser(ts, admin)
+
+	admin2 := User{
+		Email:    "moderator2@moderator.com",
+		HashPass: "password",
+		Role:     "moderator",
+	}
+	admin2.JWT = createUser(ts, admin2)
+
+	// проверяем что пользователь со статусом client не может создать дома
 	ts.Run("users registered and login as client fail house create", func() {
 		for _, house := range badHouses {
-			user := badUsers[0]
 			jsonHouse, err := json.Marshal(house)
 			ts.Require().NoError(err)
-			res, err = ts.sendRequest("house/create", user.JWT, jsonHouse)
+			res, err = ts.sendRequest("house/create", client.JWT, jsonHouse)
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					log.Println(err)
+					return
+				}
+			}()
+			checkUnautorized(ts, err, res)
+		}
+	})
+
+	// создаю дома под модератором
+	for _, house := range badHouses {
+		jsonHouse, err := json.Marshal(house)
+		ts.Require().NoError(err)
+		res, err = ts.sendRequest("house/create", admin.JWT, jsonHouse)
+		defer func() {
+			if err := res.Body.Close(); err != nil {
+				log.Println(err)
+				return
+			}
+		}()
+		checkErrAndCode(ts, err, res)
+	}
+
+	// создаю квартиры, т.к. эта функция доступна всем то проблемы не возникнет
+	badFlats := fakeFlats(badHouses)
+	ts.Run("flat create", func() {
+		for _, flat := range badFlats {
+			jsonFlat, err := json.Marshal(flat)
+			ts.Require().NoError(err)
+			res, err = ts.sendRequest("flats/create", client.JWT, jsonFlat)
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					log.Println(err)
+					return
+				}
+			}()
+			checkErrAndCode(ts, err, res)
+		}
+	})
+
+	ts.Run("test flat update", func() {
+		for _, flat := range testFlats {
+			flat.Status = "on moderate"
+			jsonFlat, err := json.Marshal(flat)
+			ts.Require().NoError(err)
+			res, err = ts.sendRequest("flat/update", admin.JWT, jsonFlat)
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					log.Println(err)
+					return
+				}
+			}()
+			checkErrAndCode(ts, err, res)
+
+			err = json.NewDecoder(res.Body).Decode(&flat)
+			ts.Require().NoError(err)
+			ts.Require().NotNil(flat.ID)
+
+			// проверяем что другой модератор не может поменять статус квартиры
+			flat.Status = "approved"
+			jsonFlat, err = json.Marshal(flat)
+			ts.Require().NoError(err)
+			res, err = ts.sendRequest("flat/update", admin2.JWT, jsonFlat)
 			defer func() {
 				if err := res.Body.Close(); err != nil {
 					log.Println(err)

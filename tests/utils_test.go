@@ -75,6 +75,30 @@ func checkResponseData(ts *TestSuite, res *http.Response, checkUnit string) stri
 	return checkUnit
 }
 
+func createUser(ts *TestSuite, user User) string {
+	fmt.Println(user)
+	jsonUser, err := json.Marshal(user)
+	ts.Require().NoError(err)
+	res, err := ts.sendRequest("register", "", jsonUser)
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.Println(err)
+			return
+		}
+	}()
+	checkErrAndCode(ts, err, res)
+	checkResponseData(ts, res, user.UserID)
+	res, err = ts.sendRequest("login", "", jsonUser)
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.Println(err)
+			return
+		}
+	}()
+	checkErrAndCode(ts, err, res)
+	return checkResponseData(ts, res, user.JWT)
+}
+
 func TestIntegration(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
