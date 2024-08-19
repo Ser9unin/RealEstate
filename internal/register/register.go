@@ -91,7 +91,7 @@ func (s *UserService) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.ResponseJSON(w, r, http.StatusCreated, uuid)
+	render.ResponseJSON(w, r, http.StatusOK, uuid)
 }
 
 func (s *UserService) Login(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +143,7 @@ func (s *UserService) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.ResponseJSON(w, r, http.StatusCreated, token)
+	render.ResponseJSON(w, r, http.StatusOK, token)
 }
 
 func createJWT(user repository.User) (string, error) {

@@ -6,18 +6,6 @@ import (
 	"net/http"
 )
 
-var (
-	badUsers  []User
-	badHouses []House
-)
-
-// var badFlats []Flat
-
-func init() {
-	badUsers = fakeUsersRegister()
-	badHouses = fakeHouses()
-}
-
 func (ts *TestSuite) TestNegativeSet() {
 	var res *http.Response
 
@@ -80,4 +68,5 @@ func (ts *TestSuite) TestNegativeSet() {
 			checkUnautorized(ts, err, res)
 		}
 	})
+
 }

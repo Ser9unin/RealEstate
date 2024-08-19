@@ -160,8 +160,13 @@ func (a *api) flatUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	uuid := w.Header().Get("uuid")
 	role := w.Header().Get("role")
-	updFlat, err = a.storage.UpdateFlatStatus(r.Context(), role, updFlat.Status, updFlat.HouseID, updFlat.ID)
+	user := repository.User{
+		UserID: uuid,
+		Role:   role,
+	}
+	updFlat, err = a.storage.UpdateFlatStatus(r.Context(), user, updFlat.Status, updFlat)
 	if err != nil {
 		a.logger.Error(err.Error())
 		render.ErrorJSON(w, r, http.StatusNotFound, fmt.Errorf("no such flat"), "")

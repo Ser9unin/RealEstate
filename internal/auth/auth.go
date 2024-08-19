@@ -14,7 +14,7 @@ import (
 
 func Moderator(httpHandler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		role, err := userByToken(r)
+		uuid, role, err := userByToken(r)
 		if err != nil {
 			permissionDenied(w, r, err)
 			return
@@ -26,6 +26,7 @@ func Moderator(httpHandler http.HandlerFunc) http.HandlerFunc {
 		}
 
 		// Call the function if the token is valid
+		w.Header().Set("uuid", uuid)
 		w.Header().Set("role", role)
 
 		httpHandler(w, r)
@@ -34,7 +35,7 @@ func Moderator(httpHandler http.HandlerFunc) http.HandlerFunc {
 
 func Any(httpHandler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		role, err := userByToken(r)
+		_, role, err := userByToken(r)
 		if err != nil {
 			permissionDenied(w, r, err)
 			return
@@ -46,24 +47,25 @@ func Any(httpHandler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func userByToken(r *http.Request) (string, error) {
+func userByToken(r *http.Request) (string, string, error) {
 	tokenString := getTokenFromRequest(r)
 	if tokenString == "" {
-		return "", fmt.Errorf("there is no token")
+		return "", "", fmt.Errorf("there is no token")
 	}
 
 	token, err := validateJWT(tokenString)
 	if err != nil {
 		log.Printf("failed to validate token: %v", err)
-		return "", err
+		return "", "", err
 	}
 
 	if !token.Valid {
 		log.Println("invalid token")
-		return "", err
+		return "", "", err
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
+	userID := claims["userID"].(string)
 	userRole := claims["role"].(string)
 
 	// эта часть под вопросом, теоретически роль может не совпадать в БД и реальности и это надо проверять
@@ -75,7 +77,7 @@ func userByToken(r *http.Request) (string, error) {
 	// 	return "", err
 	// }
 
-	return userRole, nil
+	return userID, userRole, nil
 }
 
 func getTokenFromRequest(r *http.Request) string {
@@ -84,6 +86,7 @@ func getTokenFromRequest(r *http.Request) string {
 
 	if tokenAuth != "" {
 		tokenAuth = strings.TrimPrefix(tokenAuth, "bearer ")
+		tokenAuth = strings.TrimPrefix(tokenAuth, "Bearer ")
 		return tokenAuth
 	}
 

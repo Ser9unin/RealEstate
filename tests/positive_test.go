@@ -7,17 +7,6 @@ import (
 	"net/http"
 )
 
-var (
-	testUsers  []User
-	testHouses []House
-	testFlats  []Flat
-)
-
-func init() {
-	testUsers = fakeUsersRegister()
-	testHouses = fakeHouses()
-}
-
 func (ts *TestSuite) TestPositiveSet() {
 	var res *http.Response
 

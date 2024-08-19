@@ -11,13 +11,13 @@ import (
 // Только обычный пользователь увидит все квартиры со статусом модерации approved,
 // а модератор — жильё с любым статусом модерации.
 const flatsListForAll = `-- name: FlatsList :many
-SELECT *
+SELECT id, house_id, price, rooms, status
 FROM flats
 WHERE house_id = $1 AND status = 'approved'
 ORDER BY id
 `
 const flatsListForModerator = `-- name: FlatsList :many
-SELECT *
+SELECT id, house_id, price, rooms, status
 FROM flats
 WHERE house_id = $1
 ORDER BY id
@@ -59,13 +59,13 @@ func (q *Queries) FlatsList(ctx context.Context, houseID int, userRole string) (
 }
 
 const flatForAll = `-- name: Flat :one
-SELECT *
+SELECT id, house_id, price, rooms, status
 FROM flats
 WHERE house_id = $1 AND id = $2 AND status = 'approved'
 `
 
 const flatForModerator = `-- name: Flat :one
-SELECT *
+SELECT id, house_id, price, rooms, status
 FROM flats
 WHERE house_id = $1 AND id = $2
 `
@@ -122,25 +122,45 @@ func (q *Queries) NewFlat(ctx context.Context, arg Flat) (Flat, error) {
 // Статус модерации квартиры может принимать одно из четырёх значений: created, approved, declined, on moderation.
 // Только модератор может изменить статус модерации квартиры с помощью endpoint /flat/update.
 // При успешном запросе возвращается полная информация об обновленной квартире.
+
+const flatStatus = `-- name: UpdateFlatStatus :one
+SELECT status, COALESCE(moderator, 'no moderator')
+FROM flats
+WHERE house_id = $1 AND id = $2
+`
 const updateFlatStatus = `-- name: UpdateFlatStatus :one
-UPDATE flats SET status = $1
-WHERE house_id = $2 AND id = $3
-RETURNING *
+UPDATE flats SET status = $1, moderator = $2
+WHERE house_id = $3 AND id = $4
+RETURNING id, house_id, price, rooms, status
 `
 
-func (q *Queries) UpdateFlatStatus(ctx context.Context, userRole, status string, houseID, id int) (Flat, error) {
+func (q *Queries) UpdateFlatStatus(ctx context.Context, user User, status string, flat Flat) (Flat, error) {
 	var row *sql.Row
 	var err error
-	if userRole == moderator {
+	if user.Role == moderator {
+		row = q.db.QueryRowContext(ctx, flatStatus,
+			flat.HouseID,
+			flat.ID,
+		)
+	}
+	var i Flat
+	err = row.Scan(
+		&i.Status,
+		&i.ModeratorID,
+	)
+	if err != nil {
+		return i, err
+	}
+	if i.Status != "on moderate" || i.ModeratorID == user.UserID {
 		row = q.db.QueryRowContext(ctx, updateFlatStatus,
 			status,
-			houseID,
-			id,
+			user.UserID,
+			flat.HouseID,
+			flat.ID,
 		)
 	} else {
 		return Flat{}, fmt.Errorf("you don't have permission for this action")
 	}
-	var i Flat
 	err = row.Scan(
 		&i.ID,
 		&i.HouseID,

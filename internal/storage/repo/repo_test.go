@@ -174,22 +174,44 @@ func TestFlat(t *testing.T) {
 	})
 
 	t.Run("positive test moderator update status", func(t *testing.T) {
+		user := User{
+			UserID:   "cae36e0f-69e5-4fa8-a179-a52d083c5549",
+			Email:    "moderator@moderator.com",
+			HashPass: "password",
+			Role:     "moderator",
+		}
+
 		for _, house := range testHousesFromDB {
 			testFlatsFromDB, err := storage.FlatsList(ctx, house.ID, moderator)
 			require.NoError(t, err)
 			for _, flat := range testFlatsFromDB {
 				// проверяем запрос квартиры, должен вернуть данные о квартире с датой создания
-				resultRequest, err := storage.UpdateFlatStatus(ctx, moderator, "approved", flat.HouseID, flat.ID)
+				resultRequest, err := storage.UpdateFlatStatus(ctx, user, "on moderate", flat)
 				require.NoError(t, err)
 				require.Equal(t, flat.ID, resultRequest.ID)
 				require.Equal(t, flat.HouseID, resultRequest.HouseID)
 				require.Equal(t, flat.Price, resultRequest.Price)
 				require.Equal(t, flat.Rooms, resultRequest.Rooms)
-				require.Equal(t, resultRequest.Status, "approved")
+				require.Equal(t, resultRequest.Status, "on moderate")
+			}
+		}
+	})
 
-				// т.к. статус обновили до "approved" то пользователь должен начать получать данные о квартирах
-				_, err = storage.Flat(ctx, "user", flat.HouseID, flat.ID)
-				require.NoError(t, err)
+	t.Run("negative test moderator update status", func(t *testing.T) {
+		user := User{
+			UserID:   "cae36e0f-69e5-4fa8-a179-a52d083c566",
+			Email:    "moderator2@moderator.com",
+			HashPass: "password",
+			Role:     "moderator",
+		}
+
+		for _, house := range testHousesFromDB {
+			testFlatsFromDB, err := storage.FlatsList(ctx, house.ID, moderator)
+			require.NoError(t, err)
+			for _, flat := range testFlatsFromDB {
+				// проверяем запрос квартиры, должен вернуть данные о квартире с датой создания
+				_, err := storage.UpdateFlatStatus(ctx, user, "approved", flat)
+				require.Error(t, err)
 			}
 		}
 	})

@@ -16,6 +16,21 @@ type TestSuite struct {
 	suite.Suite
 }
 
+var (
+	testUsers  []User
+	testHouses []House
+	testFlats  []Flat
+	badUsers   []User
+	badHouses  []House
+)
+
+func init() {
+	testUsers = fakeUsersRegister()
+	testHouses = fakeHouses()
+	badUsers = fakeUsersRegister()
+	badHouses = fakeHouses()
+}
+
 func (ts *TestSuite) sendRequest(targetURL, token string, payload []byte) (*http.Response, error) {
 	url := fmt.Sprintf("http://apartments/%s", targetURL)
 

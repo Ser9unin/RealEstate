@@ -16,7 +16,8 @@ CREATE TABLE flats (
     house_id INT NOT NULL REFERENCES houses(house_id) ON DELETE CASCADE,
     price INT NOT NULL,
     rooms INT NOT NULL,
-    status VARCHAR(30) NOT NULL
+    status VARCHAR(30) NOT NULL,
+    moderator VARCHAR(40)
 );
 
 -- Автозаполняем поле updated_at
