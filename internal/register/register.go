@@ -41,6 +41,12 @@ type Logger interface {
 	Warn(msg string)
 }
 
+var empty struct{}
+var roleMap = map[string]struct{}{
+	"client":    empty,
+	"moderator": empty,
+}
+
 func NewUserService(s Storage, logger Logger) *UserService {
 	return &UserService{storage: s, logger: logger}
 }
@@ -172,6 +178,10 @@ func validateUserPayload(user repository.User) error {
 	}
 
 	if user.Role == "" {
+		return errRoleRequired
+	}
+
+	if _, ok := roleMap[user.Role]; !ok {
 		return errRoleRequired
 	}
 

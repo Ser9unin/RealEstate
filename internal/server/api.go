@@ -23,6 +23,14 @@ func newAPI(storage *repository.Queries, logger Logger) api {
 	}
 }
 
+var empty struct{}
+var statusMap = map[string]struct{}{
+	"created":     empty,
+	"declined":    empty,
+	"on moderate": empty,
+	"approved":    empty,
+}
+
 func (a *api) greetings(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
@@ -157,6 +165,12 @@ func (a *api) flatUpdate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.logger.Error(err.Error())
 		render.ErrorJSON(w, r, http.StatusBadRequest, err, "")
+		return
+	}
+
+	if _, ok := statusMap[updFlat.Status]; !ok {
+		a.logger.Error(fmt.Sprintf("not allowed status: %s", updFlat.Status))
+		render.ErrorJSON(w, r, http.StatusNotFound, fmt.Errorf("not allowed status"), updFlat.Status)
 		return
 	}
 

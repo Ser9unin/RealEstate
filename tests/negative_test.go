@@ -54,6 +54,7 @@ func (ts *TestSuite) TestNegativeSet() {
 	})
 
 	ts.Run("test fail house create", func() {
+		// т.к. нет зарегистрированных пользователей, то невозможно будет создать дома
 		for _, house := range badHouses {
 			user := badUsers[0]
 			jsonHouse, err := json.Marshal(house)
@@ -68,5 +69,44 @@ func (ts *TestSuite) TestNegativeSet() {
 			checkUnautorized(ts, err, res)
 		}
 	})
+	// создаю пользователей в базе как клиентов
+	for i, user := range badUsers {
+		user.Role = "client"
+		jsonUser, err := json.Marshal(user)
+		ts.Require().NoError(err)
+		res, err = ts.sendRequest("register", "", jsonUser)
+		defer func() {
+			if err := res.Body.Close(); err != nil {
+				log.Println(err)
+				return
+			}
+		}()
+		checkErrAndCode(ts, err, res)
+		badUsers[i].UserID = checkResponseData(ts, res, user.UserID)
+		res, err = ts.sendRequest("login", "", jsonUser)
+		defer func() {
+			if err := res.Body.Close(); err != nil {
+				log.Println(err)
+				return
+			}
+		}()
+		checkErrAndCode(ts, err, res)
+		badUsers[i].JWT = checkResponseData(ts, res, user.JWT)
+	}
 
+	ts.Run("users registered and login as client fail house create", func() {
+		for _, house := range badHouses {
+			user := badUsers[0]
+			jsonHouse, err := json.Marshal(house)
+			ts.Require().NoError(err)
+			res, err = ts.sendRequest("house/create", user.JWT, jsonHouse)
+			defer func() {
+				if err := res.Body.Close(); err != nil {
+					log.Println(err)
+					return
+				}
+			}()
+			checkUnautorized(ts, err, res)
+		}
+	})
 }
