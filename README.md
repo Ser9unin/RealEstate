@@ -4,8 +4,8 @@
 
 Для запуска необходимо
 ```bash
-    git clone https://github.com/Ser9unin/RealEstate
-    cd ./RealEstate
+	git clone https://github.com/Ser9unin/RealEstate
+	cd ./RealEstate
 	make run
 ```  
 после этого приложение доступно через 
