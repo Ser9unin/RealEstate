@@ -13,7 +13,7 @@ http://localhost:8000
 
 **make run**  запускает docker контейнеры с приложением и БД
 
-**docker compose** лежат в папке ```[docker-compose.yaml](deploy/docker-compose.yaml)```
+**docker compose** лежат в папке ```[docker-compose.yaml](https://github.com/Ser9unin/RealEstate/deploy/docker-compose.yaml)```
  
 Секрет токен авторизации сейчас лежит в файле ```.env```, данная реализация применима только к тестовому проекту, для реальных проектов понимаю, что такие данные не лежат в общем доступе
 
@@ -30,6 +30,21 @@ http://localhost:8000
 ```bash
 	make integration-tests
 ```
+### Проверка работоспособности сервиса
+
+Можно проверить работоспособность загрузив [API](https://github.com/avito-tech/backend-bootcamp-assignment-2024/blob/main/api.yaml) 
+в Postman. 
+
+Последовательность:
+```/register``` -> необходимо в формате JSON как описано в API отправить регистрационные данные ```email```|```password```|```role``` на выходе получаем ```id```, далее ```id``` можно скопировать в ручку ```/login```.
+```/login``` -> можно использовать ```email``` и ```password``` заданные при регистрации, или ```id``` полученный при регистрации и ```password```. вы получите токен, его надо скопировать и использовать для авторизации при работе с остальными endpoint.
+
+Для работы с endpoint ```house/create``` | ```flat/create``` | ```house/{id}``` | ```flat/update``` необходим JWT полученный при аутентификации
+
+В Postman в поле Autorization можно выбрать тип авторизации 
+1. Bearer token, тогда токен будет отправляться на сервис через header ```"Authorization":"Bearer 'ВАШ JWT'"```
+2. API Key, тогда нужно задать Key  ```token``` и Value ```'ВАШ JWT'```, и добавить это в QueryParams.
+
 
 ### Реализованный функционал сервиса:
 Функционал отвечает на запросы описанные в [API](https://github.com/avito-tech/backend-bootcamp-assignment-2024/blob/main/api.yaml).
