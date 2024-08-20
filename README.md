@@ -43,7 +43,7 @@ http://localhost:8000
 
 Для работы с endpoint ```house/create``` | ```flat/create``` | ```house/{id}``` | ```flat/update``` необходим JWT полученный при аутентификации
 
-В Postman в поле Autorization можно выбрать тип авторизации 
+В Postman в поле Authorization можно выбрать тип авторизации 
 1. Bearer token, тогда токен будет отправляться на сервис через header ```"Authorization":"Bearer 'ВАШ JWT'"```
 2. API Key, тогда нужно задать Key  ```token``` и Value ```'ВАШ JWT'```, и добавить это в QueryParams.
 
