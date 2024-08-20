@@ -13,7 +13,7 @@ http://localhost:8000
 
 **make run**  запускает docker контейнеры с приложением и БД
 
-**docker compose** лежат в папке ```[docker-compose.yaml](https://github.com/Ser9unin/RealEstate/deploy/docker-compose.yaml)```
+**docker compose** лежат в папке [docker-compose.yaml](https://github.com/Ser9unin/RealEstate/deploy/docker-compose.yaml)
  
 Секрет токен авторизации сейчас лежит в файле ```.env```, данная реализация применима только к тестовому проекту, для реальных проектов понимаю, что такие данные не лежат в общем доступе
 
